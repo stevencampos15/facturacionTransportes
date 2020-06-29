@@ -151,7 +151,9 @@ public class FrmListaClientes extends javax.swing.JInternalFrame {
 
         int i = tblLista.getSelectedRow();
         TableModel model = tblLista.getModel();
-        int opp = JOptionPane.showConfirmDialog(this, "¿Seleccionar Cliente: " + model.getValueAt(tblLista.convertRowIndexToModel(i), 2).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION);
+        String[] opciones = {"Si", "No", "Cancelar"};
+        int opp = JOptionPane.showOptionDialog(this, "¿Seleccionar Cliente: " + model.getValueAt(tblLista.convertRowIndexToModel(i), 2).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
         if (opp == 0) {
             // Al momento de hacer clic sobre una fila se trasladara la informacion
             FrmClientes frmCliente = new FrmClientes();

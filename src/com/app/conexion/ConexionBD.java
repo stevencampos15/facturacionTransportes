@@ -15,7 +15,7 @@ public class ConexionBD {
             Class.forName("com.mysql.jdbc.Driver");
         }
         catch(ClassNotFoundException ex){
-            System.out.println("Error");
+            System.out.println("Error "+ ex);
         }
     }
     public Connection conectar(){
@@ -26,7 +26,7 @@ public class ConexionBD {
             this.cn = DriverManager.getConnection(url, usr, password);
         }
         catch (SQLException e){
-            System.out.println("Error");
+            System.out.println("Error " + e);
         }
         return this.cn;
     }
@@ -35,7 +35,8 @@ public class ConexionBD {
             this.cn.close();
         }
         catch (SQLException ex) {
-            System.out.println("Error");
+            System.out.println("Error " + ex);
         }
     }
+    
 }

@@ -5,7 +5,12 @@
  */
 package com.app.formularios;
 
+import com.app.modelo.Usuario;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -16,8 +21,47 @@ public class FrmPrincipal extends javax.swing.JFrame {
     /**
      * Creates new form FrmPrincipal
      */
-    public FrmPrincipal() {
+    
+    public FrmPrincipal(Usuario us) {
         initComponents();
+        setLogin();
+        escritorioPane.setSize(desktopPane.getWidth(), desktopPane.getHeight());
+        menuTipoUsuario(us);
+    }
+
+    private FrmPrincipal() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    //Metodo para filtrar menus de acuerdo al tipo de usuario
+    private void menuTipoUsuario(Usuario us){
+        switch (us.getTipoUsuario().getIdTipoUsuario()) {
+            case 1:
+                break;
+            case 2:
+                this.menuAdmin.setVisible(false);
+                break;
+            case 3:
+                this.menuAdmin.setVisible(false);
+                this.menuGestion.setVisible(false);
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Tipo de usuario no definido, vuelva a intentarlo","Error",JOptionPane.ERROR_MESSAGE);
+                this.dispose();
+                break;
+        }
+    }
+
+    //Metodo para centrar los formularios
+    private void centrarFormulario(JInternalFrame frm) {
+        frm.setLocation(desktopPane.getWidth() / 2 - frm.getSize().width / 2, desktopPane.getHeight() / 2 - frm.getSize().height / 2);
+    }
+
+    //Metodo para configurar el formulario
+    private void setLogin() {
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
+
     }
 
     /**
@@ -31,6 +75,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         desktopPane = new javax.swing.JDesktopPane();
         escritorioPane = new javax.swing.JDesktopPane();
+        btnCerrarSesion = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         menuAdmin = new javax.swing.JMenu();
         tuItem = new javax.swing.JMenuItem();
@@ -50,22 +95,47 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        desktopPane.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                desktopPaneComponentResized(evt);
+            }
+        });
+
+        btnCerrarSesion.setBackground(new java.awt.Color(255, 102, 102));
+        btnCerrarSesion.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
+        btnCerrarSesion.setForeground(new java.awt.Color(255, 255, 255));
+        btnCerrarSesion.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/logout.png"))); // NOI18N
+        btnCerrarSesion.setText("Cerrar Sesión");
+        btnCerrarSesion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCerrarSesionActionPerformed(evt);
+            }
+        });
+
+        escritorioPane.setLayer(btnCerrarSesion, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
         javax.swing.GroupLayout escritorioPaneLayout = new javax.swing.GroupLayout(escritorioPane);
         escritorioPane.setLayout(escritorioPaneLayout);
         escritorioPaneLayout.setHorizontalGroup(
             escritorioPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 890, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, escritorioPaneLayout.createSequentialGroup()
+                .addContainerGap(715, Short.MAX_VALUE)
+                .addComponent(btnCerrarSesion)
+                .addGap(10, 10, 10))
         );
         escritorioPaneLayout.setVerticalGroup(
             escritorioPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 640, Short.MAX_VALUE)
+            .addGroup(escritorioPaneLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addComponent(btnCerrarSesion)
+                .addContainerGap(597, Short.MAX_VALUE))
         );
 
         desktopPane.add(escritorioPane);
         escritorioPane.setBounds(0, 0, 890, 640);
 
         menuAdmin.setMnemonic('f');
-        menuAdmin.setText("Administracion");
+        menuAdmin.setText("Administración");
         menuAdmin.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
         tuItem.setMnemonic('o');
@@ -87,7 +157,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         menuAdmin.add(usuariosItem);
 
         paisesItem.setMnemonic('a');
-        paisesItem.setText("Paises");
+        paisesItem.setText("Países");
         paisesItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 paisesItemActionPerformed(evt);
@@ -116,7 +186,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         menuBar.add(menuAdmin);
 
         menuGestion.setMnemonic('e');
-        menuGestion.setText("Gestion");
+        menuGestion.setText("Gestión");
         menuGestion.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
         girosItem.setMnemonic('t');
@@ -181,6 +251,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         imprimirFacturaItem.setMnemonic('a');
         imprimirFacturaItem.setText("Imprimir Factura");
+        imprimirFacturaItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imprimirFacturaItemActionPerformed(evt);
+            }
+        });
         menuOperacion.add(imprimirFacturaItem);
 
         menuBar.add(menuOperacion);
@@ -195,14 +270,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
+            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        System.exit(0);
+        FrmLogin frmLogin = new FrmLogin();
+        frmLogin.show();
+        this.dispose();
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void tuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tuItemActionPerformed
@@ -211,6 +288,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         escritorioPane.add(frmTU);
         frmTU.show();
 
+        centrarFormulario(frmTU);
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
         frmTU.getContentPane().setBackground(nColor);
@@ -221,6 +299,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmUsuarios frmUsuarios = new FrmUsuarios();
         escritorioPane.add(frmUsuarios);
         frmUsuarios.show();
+        centrarFormulario(frmUsuarios);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -232,6 +311,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmPaises frmPaises = new FrmPaises();
         escritorioPane.add(frmPaises);
         frmPaises.show();
+        centrarFormulario(frmPaises);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -243,6 +323,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmDepartamentos frmDepartamentos = new FrmDepartamentos();
         escritorioPane.add(frmDepartamentos);
         frmDepartamentos.show();
+        centrarFormulario(frmDepartamentos);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -254,6 +335,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmGiros frmGiros = new FrmGiros();
         escritorioPane.add(frmGiros);
         frmGiros.show();
+        centrarFormulario(frmGiros);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -265,6 +347,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmCondicionesP frmCondicionesP = new FrmCondicionesP();
         escritorioPane.add(frmCondicionesP);
         frmCondicionesP.show();
+        centrarFormulario(frmCondicionesP);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -276,6 +359,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmProductos frmProductos = new FrmProductos();
         escritorioPane.add(frmProductos);
         frmProductos.show();
+        centrarFormulario(frmProductos);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -287,6 +371,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmClientes frmClientes = new FrmClientes();
         escritorioPane.add(frmClientes);
         frmClientes.show();
+        centrarFormulario(frmClientes);
 
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
@@ -298,7 +383,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmFactura frmFactura = new FrmFactura();
         escritorioPane.add(frmFactura);
         frmFactura.show();
-
+        centrarFormulario(frmFactura);
+        
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
         frmFactura.getContentPane().setBackground(nColor);
@@ -309,11 +395,37 @@ public class FrmPrincipal extends javax.swing.JFrame {
         FrmGestionFacturas frmGestionFacturas = new FrmGestionFacturas();
         escritorioPane.add(frmGestionFacturas);
         frmGestionFacturas.show();
-
+        centrarFormulario(frmGestionFacturas);
+        
         //Diseno, se agrega un color customizado para el fondo.
         Color nColor = new Color(248, 249, 252);
         frmGestionFacturas.getContentPane().setBackground(nColor);
     }//GEN-LAST:event_facturasGestionItemActionPerformed
+
+    private void imprimirFacturaItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imprimirFacturaItemActionPerformed
+        // Abrimos el formulario
+        FrmImprimirFactura frmImprimirFactura = new FrmImprimirFactura();
+        escritorioPane.add(frmImprimirFactura);
+        frmImprimirFactura.show();
+        centrarFormulario(frmImprimirFactura);
+        
+        //Diseno, se agrega un color customizado para el fondo.
+        Color nColor = new Color(248, 249, 252);
+        frmImprimirFactura.getContentPane().setBackground(nColor);
+    }//GEN-LAST:event_imprimirFacturaItemActionPerformed
+
+    private void desktopPaneComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_desktopPaneComponentResized
+        // TODO add your handling code here:
+        escritorioPane.setSize(desktopPane.getWidth(), desktopPane.getHeight());
+        this.btnCerrarSesion.setLocation(desktopPane.getWidth()-200, 20);
+    }//GEN-LAST:event_desktopPaneComponentResized
+
+    private void btnCerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarSesionActionPerformed
+        // TODO add your handling code here:
+        FrmLogin frmLogin = new FrmLogin();
+        frmLogin.show();
+        this.dispose();
+    }//GEN-LAST:event_btnCerrarSesionActionPerformed
 
     /**
      * @param args the command line arguments
@@ -351,6 +463,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCerrarSesion;
     private javax.swing.JMenuItem clientesItem;
     private javax.swing.JMenuItem condicionesItem;
     private javax.swing.JMenuItem departamentosItem;

@@ -144,7 +144,9 @@ public class FrmTUDatos extends javax.swing.JInternalFrame {
     private void tblListaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblListaMouseClicked
         int i = tblLista.getSelectedRow();
         TableModel model = tblLista.getModel();
-        int opp = JOptionPane.showConfirmDialog(this, "¿Seleccionar Tipo de usuario: " + model.getValueAt(i, 1).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION);
+        String[] opciones = {"Si", "No", "Cancelar"};
+        int opp = JOptionPane.showOptionDialog(this, "¿Seleccionar Tipo de usuario: " + model.getValueAt(i, 1).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[2]);
         if (opp == 0) {
             // Al momento de hacer clic sobre una fila se trasladara la informacion
             FrmTipoUsuario frmTU = new FrmTipoUsuario();

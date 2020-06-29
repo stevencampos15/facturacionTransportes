@@ -1,10 +1,12 @@
 package com.app.dao;
 
 import com.app.conexion.ConexionBD;
+import static com.app.dao.PaisDAO.MYSQL_DUPLICATE_PK;
 import com.app.modelo.CondicionPago;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +44,13 @@ public class CondicionPagoDAO implements Operaciones {
             }
             pst.close();
             cn.close();
-        } catch (Exception e) {
-            resp = e.toString();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_PK) {
+                //duplicate primary key 
+                resp = "El numero de ID ya existe";
+            } else {
+                resp = e.getMessage();
+            }
         } finally {
             this.conexion.desconectar();
         }
@@ -163,6 +170,29 @@ public class CondicionPagoDAO implements Operaciones {
         }
 
         return nObj;
+    }
+    
+    public int siguienteId() {
+        int id = 0;
+        try {
+            Connection cn = this.conexion.conectar();
+            String sql = "SELECT MAX(idCP) FROM condiciones_pago;";
+            PreparedStatement pst = cn.prepareStatement(sql);
+
+            //Capturamos el objeto encontrado
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                id = rs.getInt(1) + 1;
+            }
+            rs.close();
+            pst.close();
+            cn.close();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            this.conexion.desconectar();
+        }
+        return id;
     }
 
 }

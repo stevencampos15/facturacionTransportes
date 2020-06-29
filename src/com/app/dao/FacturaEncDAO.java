@@ -1,6 +1,7 @@
 package com.app.dao;
 
 import com.app.conexion.ConexionBD;
+import static com.app.dao.PaisDAO.MYSQL_DUPLICATE_PK;
 import com.app.modelo.Cliente;
 import com.app.modelo.CondicionPago;
 import com.app.modelo.FacturaEncabezado;
@@ -8,6 +9,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +50,13 @@ public class FacturaEncDAO implements Operaciones {
             }
             pst.close();
             cn.close();
-        } catch (Exception e) {
-            resp = e.toString();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_PK) {
+                //duplicate primary key 
+                resp = "El numero de comprobante ya existe";
+            } else {
+                resp = e.getMessage();
+            }
         } finally {
             this.conexion.desconectar();
         }

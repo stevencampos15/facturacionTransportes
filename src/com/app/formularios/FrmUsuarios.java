@@ -39,11 +39,29 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
             udao = new UsuarioDAO();
             llenarTabla();
             llenarCombo();
-
+            siguienteId();
         } catch (Exception e) {
             e.toString();
         }
 
+    }
+
+    //Metodo para validar los datos que se ingresan
+    private boolean validacion() {
+        boolean validado = false;
+        if (this.txtIdUsuario.getText().equals("") || this.txtUsername.getText().equals("") || (this.jCheckBox1.isSelected() && this.txtPsw.getText().equals(""))) {
+            JOptionPane.showMessageDialog(this, "No se han ingresado algunos datos necesarios", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            validado = true;
+        }
+
+        return validado;
+    }
+
+    //Metodo para buscar el siguiente ID
+    private void siguienteId() {
+        String id = String.valueOf(udao.siguienteId());
+        this.txtIdUsuario.setText(id);
     }
 
     //Metodo para llenar la tabla
@@ -95,73 +113,78 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
 
     //Con este metodo se gestionara la BD, insertar modificar o eliminar datos.
     private void gestion(String op) {
-        int id = Integer.parseInt(this.txtIdUsuario.getText());
-        String username = this.txtUsername.getText();
-        String psw = this.txtPsw.getText();
-        int idTipoUsuario = 0;
-        if (combo.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar un tipo de usuario");
-            combo.setFocusable(true);
-        } else {
-            idTipoUsuario = Integer.parseInt(combo.getSelectedItem().toString().substring(0, combo.getSelectedItem().toString().indexOf("-")));
-            TipoUsuario tusu = new TipoUsuario();
-            tusu.setIdTipoUsuario(idTipoUsuario);
-            Usuario us = new Usuario(id, username, psw, tusu);
-            switch (op) {
-                case "agregar":
-                    try {
-                        udao.insertar(us);
-                        JOptionPane.showMessageDialog(this, "El Usuario se ha agregado exitosamente.");
-                        limpiarCampos();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "Error " + e.toString());
-                    }
-                    llenarTabla();
-                    break;
+        if (validacion()) {
+            int id = Integer.parseInt(this.txtIdUsuario.getText());
+            String username = this.txtUsername.getText();
+            String psw = this.txtPsw.getText();
+            int idTipoUsuario = 0;
+            if (combo.getSelectedIndex() == 0) {
+                JOptionPane.showMessageDialog(this, "Debe seleccionar un tipo de usuario");
+                combo.setFocusable(true);
+            } else {
+                idTipoUsuario = Integer.parseInt(combo.getSelectedItem().toString().substring(0, combo.getSelectedItem().toString().indexOf("-")));
+                TipoUsuario tusu = new TipoUsuario();
+                tusu.setIdTipoUsuario(idTipoUsuario);
+                Usuario us = new Usuario(id, username, psw, tusu);
+                switch (op) {
+                    case "agregar":
+                        try {
+                            udao.insertar(us);
+                            JOptionPane.showMessageDialog(this, "El Usuario se ha agregado exitosamente.");
+                            limpiarCampos();
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "Error " + e.toString());
+                        }
+                        llenarTabla();
+                        break;
 
-                case "modificar":
-                    try {
-                        int opp = JOptionPane.showConfirmDialog(this, "¿Seguro que desea modificar el usuario?",
-                                "Modificar", JOptionPane.YES_NO_CANCEL_OPTION);
-                        if (opp == 0) {
-                            if (jCheckBox1.isSelected() == true) {
-                                int ok = JOptionPane.showConfirmDialog(this, "Se cambiará la contraseña",
-                                        "Cambiar Contraseña", JOptionPane.OK_CANCEL_OPTION);
-                                if (ok == 0) {
-                                    udao.modificarPsw(us);
+                    case "modificar":
+                        try {
+                            String[] opciones = {"Si", "No", "Cancelar"};
+                            int opp = JOptionPane.showOptionDialog(this, "¿Seguro que desea modificar el usuario?", "Modificar", JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[2]);
+                            if (opp == 0) {
+                                if (jCheckBox1.isSelected() == true) {
+                                    int ok = JOptionPane.showConfirmDialog(this, "Se cambiará la contraseña",
+                                            "Cambiar Contraseña", JOptionPane.OK_CANCEL_OPTION);
+                                    if (ok == 0) {
+                                        udao.modificarPsw(us);
+                                    }
+                                } else {
+                                    udao.modificar(us);
                                 }
-                            } else {
-                                udao.modificar(us);
+
+                                JOptionPane.showMessageDialog(this, "El usuario se ha modificado exitosamente");
+                                limpiarCampos();
                             }
-
-                            JOptionPane.showMessageDialog(this, "El usuario se ha modificado exitosamente");
-                            limpiarCampos();
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "Error " + e.toString());
                         }
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "Error " + e.toString());
-                    }
-                    llenarTabla();
-                    break;
+                        llenarTabla();
+                        break;
 
-                case "eliminar":
-                    try {
-                        int opp = JOptionPane.showConfirmDialog(this, "¿Seguro que desea eliminar el Usuario?",
-                                "Eliminar", JOptionPane.YES_NO_CANCEL_OPTION);
-                        if (opp == 0) {
-                            String msj = udao.eliminar(us);
-                            JOptionPane.showMessageDialog(this, msj);
-                            limpiarCampos();
+                    case "eliminar":
+                        try {
+                            String[] opciones = {"Si", "No", "Cancelar"};
+                            int opp = JOptionPane.showOptionDialog(this, "¿Seguro que desea modificar el usuario?", "Eliminar", JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.WARNING_MESSAGE, null, opciones, opciones[2]);
+                            if (opp == 0) {
+                                String msj = udao.eliminar(us);
+                                JOptionPane.showMessageDialog(this, msj);
+                                limpiarCampos();
+                            }
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "No se puede eliminar, "
+                                    + "necesita eliminar antes los usuarios asociados", "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "No se puede eliminar, "
-                                + "necesita eliminar antes los usuarios asociados", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                    llenarTabla();
-                    break;
+                        llenarTabla();
+                        break;
 
-                default:
-                    JOptionPane.showMessageDialog(this, "Hay un error, contactar con el administrador", "Error", JOptionPane.ERROR_MESSAGE);
-                    break;
+                    default:
+                        JOptionPane.showMessageDialog(this, "Hay un error, contactar con el administrador", "Error", JOptionPane.ERROR_MESSAGE);
+                        break;
+                }
+                siguienteId();
             }
         }
     }
@@ -194,6 +217,7 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
         jLabel6 = new javax.swing.JLabel();
         jCheckBox1 = new javax.swing.JCheckBox();
         btnLimpiar = new javax.swing.JButton();
+        btnHelpUsuario = new javax.swing.JButton();
 
         setClosable(true);
         setMaximizable(true);
@@ -205,6 +229,7 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
         btnModificar.setBackground(new java.awt.Color(11, 104, 204));
         btnModificar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnModificar.setForeground(new java.awt.Color(255, 255, 255));
+        btnModificar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/update.png"))); // NOI18N
         btnModificar.setText("Modificar");
         btnModificar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -219,6 +244,7 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
         btnEliminar.setBackground(new java.awt.Color(11, 104, 204));
         btnEliminar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnEliminar.setForeground(new java.awt.Color(255, 255, 255));
+        btnEliminar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/delete.png"))); // NOI18N
         btnEliminar.setText("Eliminar");
         btnEliminar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -237,6 +263,7 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
         btnAgregar.setBackground(new java.awt.Color(11, 104, 204));
         btnAgregar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnAgregar.setForeground(new java.awt.Color(255, 255, 255));
+        btnAgregar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/add.png"))); // NOI18N
         btnAgregar.setText("Agregar");
         btnAgregar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -290,12 +317,17 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
         btnLimpiar.setBackground(new java.awt.Color(11, 104, 204));
         btnLimpiar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnLimpiar.setForeground(new java.awt.Color(255, 255, 255));
+        btnLimpiar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/clear2.png"))); // NOI18N
         btnLimpiar.setText("Limpiar");
         btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLimpiarActionPerformed(evt);
             }
         });
+
+        btnHelpUsuario.setBackground(new java.awt.Color(11, 104, 240));
+        btnHelpUsuario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/help.png"))); // NOI18N
+        btnHelpUsuario.setToolTipText("Este formulario almacena los usuarios que tendrá el sistema como: Admin, Invitado, Etc.");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -304,86 +336,88 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(81, 81, 81)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addComponent(txtIdUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtPsw, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jCheckBox1))
+                                .addGap(25, 25, 25)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel3)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel2)
-                                            .addComponent(txtIdUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel4))
-                                        .addGap(33, 33, 33)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(combo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(jLabel3)
-                                                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(30, 30, 30)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(txtPsw, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(jLabel5)
-                                                    .addComponent(jCheckBox1)
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(btnEliminar)
-                                                        .addGap(18, 18, 18)
-                                                        .addComponent(btnLimpiar))))))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(btnAgregar)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(btnModificar))))
+                                            .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel4)
+                                            .addComponent(combo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(btnLimpiar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(btnEliminar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(btnModificar)))))
                             .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel1)))
-                        .addGap(0, 80, Short.MAX_VALUE))
+                                .addComponent(jLabel6)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnHelpUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jSeparator1)))
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(141, 141, 141))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(35, 35, 35)
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btnHelpUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel5))
+                    .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtIdUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtPsw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(combo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
+                            .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtIdUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(36, 36, 36)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBox1)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAgregar)
-                    .addComponent(btnModificar)
-                    .addComponent(btnEliminar)
-                    .addComponent(btnLimpiar))
-                .addGap(42, 42, 42)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtPsw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(combo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCheckBox1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnAgregar)
+                        .addGap(26, 26, 26)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnModificar)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(51, 51, 51)
+                                .addComponent(btnEliminar)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnLimpiar)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
@@ -413,7 +447,9 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
     private void tblListaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblListaMouseClicked
         int i = tblLista.getSelectedRow();
         TableModel model = tblLista.getModel();
-        int opp = JOptionPane.showConfirmDialog(this, "¿Seleccionar Tipo de usuario: " + model.getValueAt(i, 1).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION);
+        String[] opciones = {"Si", "No", "Cancelar"};
+        int opp = JOptionPane.showOptionDialog(this, "¿Seleccionar Tipo de usuario: " + model.getValueAt(i, 1).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[2]);
         if (opp == 0) {
             // Al momento de hacer clic sobre una fila se captura la informacion
             String idUsuario = model.getValueAt(i, 0).toString();
@@ -453,6 +489,7 @@ public class FrmUsuarios extends javax.swing.JInternalFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnEliminar;
+    private javax.swing.JButton btnHelpUsuario;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnModificar;
     private javax.swing.JComboBox<String> combo;

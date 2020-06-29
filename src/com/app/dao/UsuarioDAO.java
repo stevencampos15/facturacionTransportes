@@ -1,11 +1,13 @@
 package com.app.dao;
 
 import com.app.conexion.ConexionBD;
+import static com.app.dao.PaisDAO.MYSQL_DUPLICATE_PK;
 import com.app.modelo.TipoUsuario;
 import com.app.modelo.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +45,13 @@ public class UsuarioDAO implements Operaciones {
             }
             pst.close();
             cn.close();
-        } catch (Exception e) {
-            resp = e.toString();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_PK) {
+                //duplicate primary key 
+                resp = "El numero de ID ya existe";
+            } else {
+                resp = e.getMessage();
+            }
         } finally {
             this.conexion.desconectar();
         }
@@ -203,6 +210,56 @@ public class UsuarioDAO implements Operaciones {
         }
 
         return lst;
+    }
+
+    public int siguienteId() {
+        int id = 0;
+        try {
+            Connection cn = this.conexion.conectar();
+            String sql = "SELECT MAX(idUsuario) FROM usuarios;";
+            PreparedStatement pst = cn.prepareStatement(sql);
+
+            //Capturamos el objeto encontrado
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                id = rs.getInt(1) + 1;
+            }
+            rs.close();
+            pst.close();
+            cn.close();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            this.conexion.desconectar();
+        }
+        return id;
+    }
+
+    public Usuario login(String username, String pwd) {
+        Usuario us = null;
+        try {
+            Connection cn = this.conexion.conectar();
+            String sql = "SELECT * FROM usuarios WHERE username=? and psw=SHA1(?);";
+            PreparedStatement pst = cn.prepareStatement(sql);
+            pst.setString(1, username);
+            pst.setString(2, pwd);
+            
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                TipoUsuario tusu = new TipoUsuario();
+                tusu.setIdTipoUsuario(rs.getInt(4));
+                us = new Usuario(rs.getInt(1), rs.getString(2), rs.getString(3), tusu);
+            }
+            rs.close();
+            pst.close();
+            cn.close();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            this.conexion.desconectar();
+        }
+
+        return us;
     }
 
 }

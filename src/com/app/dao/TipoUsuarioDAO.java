@@ -6,6 +6,7 @@
 package com.app.dao;
 
 import com.app.conexion.ConexionBD;
+import static com.app.dao.PaisDAO.MYSQL_DUPLICATE_PK;
 import com.app.modelo.TipoUsuario;
 import java.sql.*;
 import java.util.ArrayList;
@@ -44,8 +45,13 @@ public class TipoUsuarioDAO implements Operaciones {
             }
             pst.close();
             cn.close();
-        } catch (Exception e) {
-            resp = e.toString();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_PK) {
+                //duplicate primary key 
+                resp = "El numero de ID ya existe";
+            } else {
+                resp = e.getMessage();
+            }
         } finally {
             this.conexion.desconectar();
         }
@@ -167,6 +173,29 @@ public class TipoUsuarioDAO implements Operaciones {
         }
 
         return tuObj;
+    }
+    
+    public int siguienteId() {
+        int id = 0;
+        try {
+            Connection cn = this.conexion.conectar();
+            String sql = "SELECT MAX(idTipoUsuario) FROM tipos_usuarios;";
+            PreparedStatement pst = cn.prepareStatement(sql);
+
+            //Capturamos el objeto encontrado
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                id = rs.getInt(1) + 1;
+            }
+            rs.close();
+            pst.close();
+            cn.close();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            this.conexion.desconectar();
+        }
+        return id;
     }
 
 }

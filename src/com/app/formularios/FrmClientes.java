@@ -31,7 +31,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
     public static String direccionCC;
     public static String depCC;
     public static String giroCC;
-    
+
     //Datos locales
     private DepartamentoDAO depdao;
     private GiroDAO gdao;
@@ -47,11 +47,28 @@ public class FrmClientes extends javax.swing.JInternalFrame {
             gdao = new GiroDAO();
             llenarComboGiro();
             clidao = new ClienteDAO();
-
+            siguienteId();
         } catch (Exception e) {
             e.toString();
         }
 
+    }
+
+    //Metodo para buscar el siguiente ID
+    private void siguienteId() {
+        String id = String.valueOf(clidao.siguienteId());
+        this.txtIdCliente.setText(id);
+    }
+
+    //Metodo para validar los campos que se ingresan
+    private boolean validacion() {
+        boolean validado = false;
+        if (this.txtIdCliente.getText().equals("") || this.txtNombreCliente.getText().equals("") || this.txtNit.getText().equals("")) {
+            JOptionPane.showMessageDialog(this, "No se han ingresado algunos datos necesarios", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            validado = true;
+        }
+        return validado;
     }
 
     //Con este metodo se llenaran los campos al escoger un dato en la lista
@@ -64,22 +81,22 @@ public class FrmClientes extends javax.swing.JInternalFrame {
             this.txtDescripcion.setText(descripcionCC);
             this.txtRegistro.setText(registroCC);
             this.txtDireccionCliente.setText(direccionCC);
-            
+
             int idDep = Integer.parseInt(depCC);
             int idGiro = Integer.parseInt(giroCC);
             //Se busca los datos extraidos para los combos
             Departamento dep = new Departamento();
             dep.setIdDepartamento(idDep);
             Departamento d = (Departamento) depdao.buscar(dep);
-            
+
             Giro giro = new Giro();
             giro.setIdGiro(idGiro);
             Giro g = (Giro) gdao.buscar(giro);
-            
+
             //Se coloca en el combo
-            this.comboDepartamento.setSelectedItem(d.getIdDepartamento()+ "-" + d.getNombreDepartamento());
-            this.comboGiro.setSelectedItem(g.getIdGiro()+"-"+g.getNombreGiro());
-            
+            this.comboDepartamento.setSelectedItem(d.getIdDepartamento() + "-" + d.getNombreDepartamento());
+            this.comboGiro.setSelectedItem(g.getIdGiro() + "-" + g.getNombreGiro());
+
         }
     }
 
@@ -139,62 +156,69 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         String registro = this.txtRegistro.getText();
         String direccion = this.txtDireccionCliente.getText();
 
-        if (comboDepartamento.getSelectedIndex() == 0 || comboGiro.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar los elementos de las listas");
-            comboDepartamento.setFocusable(true);
+        if (this.txtIdCliente.getText().equals("")) {
+            JOptionPane.showMessageDialog(this, "No se ha ingresado el Codigo de cliente", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            int idDepartamento = Integer.parseInt(comboDepartamento.getSelectedItem().toString().substring(0, comboDepartamento.getSelectedItem().toString().indexOf("-")));
-            Departamento dep = new Departamento();
-            dep.setIdDepartamento(idDepartamento);
+            if (comboDepartamento.getSelectedIndex() == 0 || comboGiro.getSelectedIndex() == 0) {
+                JOptionPane.showMessageDialog(this, "Debe seleccionar los elementos de las listas");
+                comboDepartamento.setFocusable(true);
+            } else {
+                int idDepartamento = Integer.parseInt(comboDepartamento.getSelectedItem().toString().substring(0, comboDepartamento.getSelectedItem().toString().indexOf("-")));
+                Departamento dep = new Departamento();
+                dep.setIdDepartamento(idDepartamento);
 
-            int idGiro = Integer.parseInt(comboGiro.getSelectedItem().toString().substring(0, comboGiro.getSelectedItem().toString().indexOf("-")));
-            Giro giro = new Giro();
-            giro.setIdGiro(idGiro);
+                int idGiro = Integer.parseInt(comboGiro.getSelectedItem().toString().substring(0, comboGiro.getSelectedItem().toString().indexOf("-")));
+                Giro giro = new Giro();
+                giro.setIdGiro(idGiro);
 
-            Cliente cliente = new Cliente(id, nit, nombre, telefono, descripcion, registro, direccion, dep, giro);
-            switch (op) {
-                case "agregar":
-                    try {
-                        msj = clidao.insertar(cliente);
-                        JOptionPane.showMessageDialog(this, msj);
-                        limpiarCampos();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "Error " + e.toString());
-                    }
-                    break;
-
-                case "modificar":
-                    try {
-                        int opp = JOptionPane.showConfirmDialog(this, "¿Seguro que desea modificar el cliente?",
-                                "Modificar", JOptionPane.YES_NO_CANCEL_OPTION);
-                        if (opp == 0) {
-                            msj = clidao.modificar(cliente);
+                Cliente cliente = new Cliente(id, nit, nombre, telefono, descripcion, registro, direccion, dep, giro);
+                switch (op) {
+                    case "agregar":
+                        try {
+                            msj = clidao.insertar(cliente);
                             JOptionPane.showMessageDialog(this, msj);
                             limpiarCampos();
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "Error " + e.toString());
                         }
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "Error " + e.toString());
-                    }
-                    break;
+                        break;
 
-                case "eliminar":
-                    try {
-                        int opp = JOptionPane.showConfirmDialog(this, "¿Seguro que desea eliminar el cliente?",
-                                "Eliminar", JOptionPane.YES_NO_CANCEL_OPTION);
-                        if (opp == 0) {
-                            msj = clidao.eliminar(cliente);
-                            JOptionPane.showMessageDialog(this, msj);
-                            limpiarCampos();
+                    case "modificar":
+                        try {
+                            String[] opciones = {"Si", "No", "Cancelar"};
+                            int opp = JOptionPane.showOptionDialog(this, "¿Seguro que desea modificar el cliente?", "Modificar", JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[2]);
+                            if (opp == 0) {
+                                msj = clidao.modificar(cliente);
+                                JOptionPane.showMessageDialog(this, msj);
+                                limpiarCampos();
+                            }
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "Error " + e.toString());
                         }
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "No se puede eliminar, "
-                                + "necesita eliminar antes los clientes asociados", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                    break;
+                        break;
 
-                default:
-                    JOptionPane.showMessageDialog(this, "Hay un error, contactar con el administrador", "Error", JOptionPane.ERROR_MESSAGE);
-                    break;
+                    case "eliminar":
+                        try {
+                            String[] opciones = {"Si", "No", "Cancelar"};
+                            int opp = JOptionPane.showOptionDialog(this, "¿Seguro que desea eliminar el cliente?", "Eliminar", JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.WARNING_MESSAGE, null, opciones, opciones[2]);
+                            if (opp == 0) {
+                                msj = clidao.eliminar(cliente);
+                                JOptionPane.showMessageDialog(this, msj);
+                                limpiarCampos();
+                            }
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "No se puede eliminar, "
+                                    + "necesita eliminar antes los clientes asociados", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        break;
+
+                    default:
+                        JOptionPane.showMessageDialog(this, "Hay un error, contactar con el administrador", "Error", JOptionPane.ERROR_MESSAGE);
+                        break;
+                }
+                siguienteId();
             }
         }
     }
@@ -238,6 +262,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         txtNit = new javax.swing.JFormattedTextField();
         lblTelefono2 = new javax.swing.JLabel();
         txtDescripcion = new javax.swing.JTextField();
+        btnHelpCli = new javax.swing.JButton();
 
         setClosable(true);
         setMaximizable(true);
@@ -264,6 +289,8 @@ public class FrmClientes extends javax.swing.JInternalFrame {
 
         txtDireccionCliente.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
 
+        btnAtras.setFont(new java.awt.Font("Wide Latin", 0, 18)); // NOI18N
+        btnAtras.setForeground(new java.awt.Color(255, 255, 255));
         btnAtras.setText("<");
         btnAtras.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -271,20 +298,26 @@ public class FrmClientes extends javax.swing.JInternalFrame {
             }
         });
 
+        btnFin.setFont(new java.awt.Font("Wide Latin", 0, 18)); // NOI18N
+        btnFin.setForeground(new java.awt.Color(255, 255, 255));
         btnFin.setText(">>");
 
+        btnInicio.setFont(new java.awt.Font("Wide Latin", 0, 18)); // NOI18N
+        btnInicio.setForeground(new java.awt.Color(255, 255, 255));
         btnInicio.setText("<<");
 
+        btnSiguiente.setFont(new java.awt.Font("Wide Latin", 0, 18)); // NOI18N
+        btnSiguiente.setForeground(new java.awt.Color(255, 255, 255));
         btnSiguiente.setText(">");
 
         lblCodigo.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
-        lblCodigo.setText("Codigo:");
+        lblCodigo.setText("Código:");
 
         lblNomEmpresa.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
         lblNomEmpresa.setText("Nombre de la Empresa:");
 
         lblDireccion.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
-        lblDireccion.setText("Direccion:");
+        lblDireccion.setText("Dirección:");
 
         lblNit.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
         lblNit.setText("NIT:");
@@ -293,7 +326,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         lblGiro.setText("Giro:");
 
         lblTelefono.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
-        lblTelefono.setText("Telefono:");
+        lblTelefono.setText("Teléfono:");
 
         jLabel1.setFont(new java.awt.Font("Calibri", 1, 36)); // NOI18N
         jLabel1.setText("Clientes");
@@ -301,6 +334,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         btnModificar.setBackground(new java.awt.Color(11, 104, 204));
         btnModificar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnModificar.setForeground(new java.awt.Color(255, 255, 255));
+        btnModificar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/update.png"))); // NOI18N
         btnModificar.setText("Modificar");
         btnModificar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -311,6 +345,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         btnAgregar.setBackground(new java.awt.Color(11, 104, 204));
         btnAgregar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnAgregar.setForeground(new java.awt.Color(255, 255, 255));
+        btnAgregar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/add.png"))); // NOI18N
         btnAgregar.setText("Agregar");
         btnAgregar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -321,6 +356,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         btnLimpiar.setBackground(new java.awt.Color(11, 104, 204));
         btnLimpiar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnLimpiar.setForeground(new java.awt.Color(255, 255, 255));
+        btnLimpiar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/clear2.png"))); // NOI18N
         btnLimpiar.setText("Limpiar");
         btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -331,6 +367,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         btnEliminar.setBackground(new java.awt.Color(11, 104, 204));
         btnEliminar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnEliminar.setForeground(new java.awt.Color(255, 255, 255));
+        btnEliminar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/delete.png"))); // NOI18N
         btnEliminar.setText("Eliminar");
         btnEliminar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -341,6 +378,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         btnSalir.setBackground(new java.awt.Color(11, 104, 204));
         btnSalir.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnSalir.setForeground(new java.awt.Color(255, 255, 255));
+        btnSalir.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/exit.png"))); // NOI18N
         btnSalir.setText("Salir");
         btnSalir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -351,6 +389,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         btnBuscar.setBackground(new java.awt.Color(11, 104, 204));
         btnBuscar.setFont(new java.awt.Font("Gadugi", 0, 18)); // NOI18N
         btnBuscar.setForeground(new java.awt.Color(255, 255, 255));
+        btnBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/search.png"))); // NOI18N
         btnBuscar.setText("Buscar");
         btnBuscar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -396,7 +435,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         txtNit.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
 
         lblTelefono2.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
-        lblTelefono2.setText("Descripcion:");
+        lblTelefono2.setText("Descripción:");
 
         txtDescripcion.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         txtDescripcion.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -405,6 +444,10 @@ public class FrmClientes extends javax.swing.JInternalFrame {
             }
         });
 
+        btnHelpCli.setBackground(new java.awt.Color(11, 104, 240));
+        btnHelpCli.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/app/img/help.png"))); // NOI18N
+        btnHelpCli.setToolTipText("Almacena los datos de los clientes,  a los cuales la empresa les presta servicio.");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -412,7 +455,8 @@ public class FrmClientes extends javax.swing.JInternalFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(29, 29, 29)
                 .addComponent(jLabel1)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnHelpCli, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jSeparator2))
@@ -424,11 +468,11 @@ public class FrmClientes extends javax.swing.JInternalFrame {
                         .addGap(18, 18, 18)
                         .addComponent(btnModificar)
                         .addGap(18, 18, 18)
-                        .addComponent(btnLimpiar)
-                        .addGap(18, 18, 18)
                         .addComponent(btnEliminar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnLimpiar)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(2, 2, 2)
                         .addComponent(lblCodigo)
@@ -477,8 +521,11 @@ public class FrmClientes extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addComponent(btnHelpCli, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -527,7 +574,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTelefono2)
                     .addComponent(txtDescripcion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnModificar)
                     .addComponent(btnAgregar)
@@ -546,12 +593,18 @@ public class FrmClientes extends javax.swing.JInternalFrame {
 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
         // Se modifica el cliente
-        gestion("modificar");
+        if (validacion()) {
+            gestion("modificar");
+        }
+
     }//GEN-LAST:event_btnModificarActionPerformed
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
         // Se agrega el cliente
-        gestion("agregar");
+        if (validacion()) {
+            gestion("agregar");
+        }
+
     }//GEN-LAST:event_btnAgregarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
@@ -609,6 +662,7 @@ public class FrmClientes extends javax.swing.JInternalFrame {
     private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnFin;
+    private javax.swing.JButton btnHelpCli;
     private javax.swing.JButton btnInicio;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnModificar;

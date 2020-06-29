@@ -1,4 +1,3 @@
-
 package com.app.formularios;
 
 import com.app.dao.FacturaEncDAO;
@@ -146,7 +145,9 @@ public class FrmListaFacturas extends javax.swing.JInternalFrame {
 
         int i = tblLista.getSelectedRow();
         TableModel model = tblLista.getModel();
-        int opp = JOptionPane.showConfirmDialog(this, "¿Seleccionar Factura: #" + model.getValueAt(tblLista.convertRowIndexToModel(i), 0).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION);
+        String[] opciones = {"Si", "No", "Cancelar"};
+        int opp = JOptionPane.showOptionDialog(this, "¿Seleccionar Factura: #" + model.getValueAt(tblLista.convertRowIndexToModel(i), 0).toString() + " ?", "Seleccionar", JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
         if (opp == 0) {
             // Al momento de hacer clic sobre una fila se trasladara la informacion
             FrmGestionFacturas frmGestionFacturas = new FrmGestionFacturas();

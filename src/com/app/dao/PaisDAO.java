@@ -5,6 +5,7 @@ import com.app.modelo.Pais;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 public class PaisDAO implements Operaciones {
 
     private ConexionBD conexion = new ConexionBD();
+    public static final int MYSQL_DUPLICATE_PK = 1062;
 
     @Override
     public String insertar(Object obj) {
@@ -35,14 +37,19 @@ public class PaisDAO implements Operaciones {
 
             //Creamos la respuesta a devolver
             if (nFilas == 1) {
-                resp = "Se ha ingresado " + nFilas + " regitro.";
+                resp = "Se ha ingresado " + nFilas + " registro.";
             } else {
-                resp = "Se han ingresado " + nFilas + " regitros.";
+                resp = "Se han ingresado " + nFilas + " registros.";
             }
             pst.close();
             cn.close();
-        } catch (Exception e) {
-            resp = e.toString();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == MYSQL_DUPLICATE_PK) {
+                //duplicate primary key 
+                resp = "El numero de ID ya existe";
+            } else {
+                resp = e.getMessage();
+            }
         } finally {
             this.conexion.desconectar();
         }
@@ -67,9 +74,9 @@ public class PaisDAO implements Operaciones {
 
             //Creamos la respuesta a devolver
             if (nFilas == 1) {
-                resp = "Se ha modificado " + nFilas + " regitro.";
+                resp = "Se ha modificado " + nFilas + " registro.";
             } else {
-                resp = "Se han modificado " + nFilas + " regitros.";
+                resp = "Se han modificado " + nFilas + " registros.";
             }
             pst.close();
             cn.close();
@@ -98,9 +105,9 @@ public class PaisDAO implements Operaciones {
 
             //Creamos la respuesta a devolver
             if (nFilas == 1) {
-                resp = "Se ha eliminado " + nFilas + " regitro.";
+                resp = "Se ha eliminado " + nFilas + " registro.";
             } else {
-                resp = "Se han eliminado " + nFilas + " regitros.";
+                resp = "Se han eliminado " + nFilas + " registros.";
             }
             pst.close();
             cn.close();
@@ -162,7 +169,28 @@ public class PaisDAO implements Operaciones {
 
         return paisObj;
     }
-    
-    
+
+    public int siguienteId() {
+        int id = 0;
+        try {
+            Connection cn = this.conexion.conectar();
+            String sql = "SELECT MAX(idPais) FROM paises;";
+            PreparedStatement pst = cn.prepareStatement(sql);
+
+            //Capturamos el objeto encontrado
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                id = rs.getInt(1) + 1;
+            }
+            rs.close();
+            pst.close();
+            cn.close();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            this.conexion.desconectar();
+        }
+        return id;
+    }
 
 }
