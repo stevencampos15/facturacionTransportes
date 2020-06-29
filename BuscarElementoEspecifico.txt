@@ -1,0 +1,11 @@
+System.out.println("Lista completa:");
+        List<Usuario> lst = (List<Usuario>) usdao.consultar();
+        Object pruebaObj;
+        for(Usuario tusu : lst){
+            System.out.println(tusu.getIdUsuario() +" "+
+                    tusu.getUsername() + " " +
+                    tusu.getPsw() + " " +
+                    tusu.getTipoUsuario().getIdTipoUsuario()+ " "
+                    + ((TipoUsuario) (pruebaObj = tudao.buscarObj(tusu.getTipoUsuario()))).getNombreTU());
+        }
+    }
